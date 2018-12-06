@@ -15,7 +15,7 @@ the maximum efficiency of multi-core processors.
 System requirements
 -------------------
 
-- Unity 2018.2 or later
+- Unity 2019.1 or later
 
 How to play with this project
 -----------------------------

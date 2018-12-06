@@ -60,7 +60,7 @@ unsafe class ScannerSystem : JobComponentSystem
 
         // Output array; Not govened by parallel-for
         [NativeDisableParallelForRestriction]
-        public ComponentDataArray<TransformMatrix> Transforms;
+        public ComponentDataArray<LocalToWorld> Transforms;
 
         // Transform counter; Shared between jobs via the pointer
         [NativeDisableUnsafePtrRestriction] public int* pCounter;
@@ -88,7 +88,7 @@ unsafe class ScannerSystem : JobComponentSystem
             var count = System.Threading.Interlocked.Increment(ref *pCounter) - 1;
 
             // Output
-            Transforms[count % Transforms.Length] = new TransformMatrix { Value = matrix };
+            Transforms[count % Transforms.Length] = new LocalToWorld { Value = matrix };
         }
     }
 
@@ -96,7 +96,7 @@ unsafe class ScannerSystem : JobComponentSystem
     JobHandle BuildJobChain(float3 origin, Scanner scanner, JobHandle deps)
     {
         // Transform output destination
-        var transforms = _voxelGroup.GetComponentDataArray<TransformMatrix>();
+        var transforms = _voxelGroup.GetComponentDataArray<LocalToWorld>();
         if (transforms.Length == 0) return deps;
 
         if (_pTransformCount == null)
@@ -144,10 +144,10 @@ unsafe class ScannerSystem : JobComponentSystem
         return deps;
     }
 
-    protected override void OnCreateManager(int capacity)
+    protected override void OnCreateManager()
     {
         _scannerGroup = GetComponentGroup(typeof(Scanner), typeof(Position));
-        _voxelGroup = GetComponentGroup(typeof(Voxel), typeof(TransformMatrix));
+        _voxelGroup = GetComponentGroup(typeof(Voxel), typeof(LocalToWorld));
     }
 
     protected override void OnDestroyManager()

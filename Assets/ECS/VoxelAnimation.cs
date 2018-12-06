@@ -10,11 +10,11 @@ using Unity.Mathematics;
 class VoxelAnimationSystem : JobComponentSystem
 {
     [Unity.Burst.BurstCompile]
-    struct VoxelAnimation : IJobProcessComponentData<Voxel, TransformMatrix>
+    struct VoxelAnimation : IJobProcessComponentData<Voxel, LocalToWorld>
     {
         public float dt;
 
-        public void Execute([ReadOnly] ref Voxel voxel, ref TransformMatrix matrix)
+        public void Execute([ReadOnly] ref Voxel voxel, ref LocalToWorld matrix)
         {
             // Per-instance random number
             var hash = new XXHash(voxel.ID);
@@ -30,7 +30,7 @@ class VoxelAnimationSystem : JobComponentSystem
             scale *= math.lerp(0.9f, 0.98f, rand1);
 
             // Build a new matrix.
-            matrix = new TransformMatrix {
+            matrix = new LocalToWorld {
                 Value = new float4x4(
                     new float4(scale, 0, 0, 0),
                     new float4(0, scale, 0, 0),
@@ -44,6 +44,6 @@ class VoxelAnimationSystem : JobComponentSystem
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
         var job = new VoxelAnimation() { dt = UnityEngine.Time.deltaTime };
-        return job.Schedule(this, 64, inputDeps);
+        return job.Schedule(this, inputDeps);
     } 
 }
